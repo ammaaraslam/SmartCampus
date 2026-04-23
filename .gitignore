@@ -1,0 +1,26 @@
+# Compiled classes
+target/
+*.class
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Maven
+.m2/
+dependency-reduced-pom.xml
+
+# Java source files (if you want to exclude them temporarily)
+# Uncomment if needed:
+src/main/java/com/mycompany/smartcampus/models/
+src/main/java/com/mycompany/smartcampus/resources/
+src/main/java/com/mycompany/smartcampus/services/
+src/main/java/com/mycompany/smartcampus/exceptions/
+src/main/java/com/mycompany/smartcampus/mappers/
+src/main/java/com/mycompany/smartcampus/filters/
+src/main/java/com/mycompany/smartcampus/dto/
