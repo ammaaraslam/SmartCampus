@@ -7,6 +7,59 @@ A RESTful API for managing campus rooms and their associated sensors, built with
 
 ---
 
+## Table of Contents
+
+- [Quick Start](#quick-start)
+   * [Prerequisites](#prerequisites)
+   * [Setup Instructions](#setup-instructions)
+      + [1. Clone the Repository](#1-clone-the-repository)
+      + [2. Build the Project](#2-build-the-project)
+      + [3. Deploy to Tomcat](#3-deploy-to-tomcat)
+      + [4. Verify Installation](#4-verify-installation)
+- [API Specifications](#api-specifications)
+   * [Base URL](#base-url)
+   * [Content-Type](#content-type)
+- [API Endpoints](#api-endpoints)
+   * [1. Discovery Resource](#1-discovery-resource)
+      + [GET `/api/v1`](#get-apiv1)
+   * [2. Room Management](#2-room-management)
+      + [GET `/api/v1/rooms`](#get-apiv1rooms)
+      + [POST `/api/v1/rooms`](#post-apiv1rooms)
+      + [GET `/api/v1/rooms/{roomId}`](#get-apiv1roomsroomid)
+      + [DELETE `/api/v1/rooms/{roomId}`](#delete-apiv1roomsroomid)
+   * [3. Sensor Management](#3-sensor-management)
+      + [GET `/api/v1/sensors`](#get-apiv1sensors)
+      + [POST `/api/v1/sensors`](#post-apiv1sensors)
+      + [GET `/api/v1/sensors/{sensorId}`](#get-apiv1sensorssensorid)
+      + [DELETE `/api/v1/sensors/{sensorId}`](#delete-apiv1sensorssensorid)
+   * [4. Sensor Readings (Sub-Resource)](#4-sensor-readings-sub-resource)
+      + [GET `/api/v1/sensors/{sensorId}/readings`](#get-apiv1sensorssensoridreadings)
+      + [POST `/api/v1/sensors/{sensorId}/readings`](#post-apiv1sensorssensoridreadings)
+- [HTTP Status Codes](#http-status-codes)
+- [Example Usage](#example-usage)
+   * [Create a Room](#create-a-room)
+   * [Create a Sensor](#create-a-sensor)
+   * [Add a Reading](#add-a-reading)
+   * [Get All Temperature Sensors](#get-all-temperature-sensors)
+   * [Delete a Sensor](#delete-a-sensor)
+- [Technologies](#technologies)
+- [Project Structure](#project-structure)
+- [Data Storage](#data-storage)
+- [Troubleshooting](#troubleshooting)
+- [Answers to Coursework Questions](#answers-to-coursework-questions)
+   * [Question 1](#question-1-in-your-report-explain-the-default-lifecycle-of-a-jax-rs-resource-class-is-a-new-instance-instantiated-for-every-incoming-request-or-does-the-runtime-treat-it-as-a-singleton-elaborate-on-how-this-architectural-decision-impacts-the-way-you-manage-and-synchronize-your-in-memory-data-structures-mapslists-to-prevent-data-loss-or-race-conditions)
+   * [Question 2](#question-2-why-is-the-provision-of-hypermedia-links-and-navigation-within-responses-considered-a-hallmark-of-advanced-restful-design-hateoas-how-does-this-approach-benefit-client-developers-compared-to-static-documentation)
+   * [Question 3](#question-3-when-returning-a-list-of-rooms-what-are-the-implications-of-returning-only-ids-versus-returning-the-full-room-objects-consider-network-bandwidth-and-client-side-processing)
+   * [Question 4](#question-4-is-the-delete-operation-idempotent-in-your-implementation-provide-a-detailed-justification-by-describing-what-happens-if-a-client-mistakenly-sends-the-exact-same-delete-request-for-a-room-multiple-times)
+   * [Question 5](#question-5-we-explicitly-use-the-consumes-mediatypeapplication_json-annotation-on-the-post-method-explain-the-technical-consequences-if-a-client-attempts-to-send-data-in-a-different-format-such-as-textplain-or-applicationxml-how-does-jax-rs-handle-this-mismatch)
+   * [Question 6](#question-6-you-implemented-this-filtering-using-queryparam-contrast-this-with-an-alternative-design-where-the-type-is-part-of-the-url-path-eg-apivlsensorstypeco2-why-is-the-query-parameter-approach-generally-considered-superior-for-filtering-and-searching-collections)
+   * [Question 7](#question-7-discuss-the-architectural-benefits-of-the-sub-resource-locator-pattern-how-does-delegating-logic-to-separate-classes-help-manage-complexity-in-large-apis-compared-to-defining-every-nested-path-eg-sensorsidreadingsrid-in-one-massive-controller-class)
+   * [Question 8](#question-8-why-is-http-422-often-considered-more-semantically-accurate-than-a-standard-404-when-the-issue-is-a-missing-reference-inside-a-valid-json-payload)
+   * [Question 9](#question-9-from-a-cybersecurity-standpoint-explain-the-risks-associated-with-exposing-internal-java-stack-traces-to-external-api-consumers-what-specific-information-could-an-attacker-gather-from-such-a-trace)
+   * [Question 10](#question-10-why-is-it-advantageous-to-use-jax-rs-filters-for-cross-cutting-concerns-like-logging-rather-than-manually-inserting-loggerinfo-statements-inside-every-single-resource-method)
+
+---
+
 ## Quick Start
 
 ### Prerequisites
@@ -457,6 +510,8 @@ public synchronized List<Sensor> getAllSensors() { ... }
  
 **Why it works:** Only one thread can execute synchronized methods at a time, ensuring atomic read-write operations across concurrent requests while maintaining data consistency.
 
+---
+
 ### Question 2: Why is the provision of ”Hypermedia” (links and navigation within responses) considered a hallmark of advanced RESTful design (HATEOAS)? How does this approach benefit client developers compared to static documentation?
 
 **HATEOAS** (Hypermedia As The Engine Of Application State) embeds navigation links in API responses, enabling **client discoverability** without hardcoding URLs.
@@ -478,6 +533,8 @@ public synchronized List<Sensor> getAllSensors() { ... }
 - **Self-documenting:** API becomes self-explanatory without separate docs
 - **State-driven navigation:** Clients discover valid next actions from responses
 
+---
+
 ### Question 3: When returning a list of rooms, what are the implications of returning only IDs versus returning the full room objects? Consider network bandwidth and client side processing.
 
 **Trade-off analysis:**
@@ -495,6 +552,8 @@ public synchronized List<Sensor> getAllSensors() { ... }
 - Single-request satisfaction improves user experience
 - Trade-off favors latency over bandwidth
 
+---
+
 ### Question 4: Is the DELETE operation idempotent in your implementation? Provide a detailed justification by describing what happens if a client mistakenly sends the exact same DELETE request for a room multiple times.
 
 **Definition:** An operation is idempotent if invoking it multiple times produces the same **end-state result** as invoking it once.
@@ -505,6 +564,8 @@ public synchronized List<Sensor> getAllSensors() { ... }
 **System state after each request:** Identical - the room is absent.
  
 **RFC 7231 compliance:** HTTP DELETE is defined as idempotent. This makes **network retries safe** - clients can safely re-attempt failed DELETE requests without risking duplicate deletions or data corruption.
+
+---
 
 ### Question 5: We explicitly use the @Consumes (MediaType.APPLICATION_JSON) annotation on the POST method. Explain the technical consequences if a client attempts to send data in a different format, such as text/plain or application/xml. How does JAX-RS handle this mismatch?
 
@@ -528,6 +589,8 @@ curl -X POST /api/v1/sensors \
 4. If match → proceeds to JSON deserialization via MessageBodyReader
 **Best Practice:** Always specify @Consumes to enforce API contracts and prevent invalid input processing.
 
+---
+
 ### Question 6: You implemented this filtering using @QueryParam. Contrast this with an alternative design where the type is part of the URL path (e.g., /api/vl/sensors/type/CO2). Why is the query parameter approach generally considered superior for filtering and searching collections?
 
 We use `@QueryParam("type")` for filtering: `GET /api/v1/sensors?type=CO2`
@@ -549,6 +612,8 @@ public Response getAllSensors(@QueryParam("type") String type) {
     return Response.ok(dataStore.getAllSensors()).build();
 }
 ```
+
+---
 
 ### Question 7: Discuss the architectural benefits of the Sub-Resource Locator pattern. How does delegating logic to separate classes help manage complexity in large APIs compared to defining every nested path (e.g., sensors/{id}/readings/{rid}) in one massive controller class?
 
@@ -575,6 +640,8 @@ public SensorReadingResource getSensorReadings(@PathParam("sensorId") String sen
 **SOLID Principle:** Each class has **single responsibility** → easier to reason about, test, and extend.
  
 **Real-world impact:** Enterprise APIs with 500+ endpoints benefit tremendously from sub-resources; monolithic controllers become unmaintainable nightmares.
+
+---
 
 ### Question 8: Why is HTTP 422 often considered more semantically accurate than a standard 404 when the issue is a missing reference inside a valid JSON payload?
 
@@ -609,6 +676,7 @@ public Response createSensor(Sensor sensor) throws LinkedResourceNotFoundExcepti
 - **422 Unprocessable Entity:** Request valid but references invalid dependency ✓
 - **404 Not Found:** Direct path resource missing, endpoint doesn't exist
 
+---
 
 ### Question 9: From a cybersecurity standpoint, explain the risks associated with exposing internal Java stack traces to external API consumers. What specific information could an attacker gather from such a trace?
 
@@ -652,6 +720,7 @@ public class ThrowableExceptionMapper implements ExceptionMapper<Throwable> {
  
 **Client sees:** Generic "Internal Server Error" (no stack trace, no package names, no line numbers)
 
+---
 
 ### Question 10: Why is it advantageous to use JAX-RS filters for cross-cutting concerns like logging, rather than manually inserting Logger.info() statements inside every single resource method?
 
